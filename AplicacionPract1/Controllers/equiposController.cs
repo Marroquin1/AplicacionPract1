@@ -34,6 +34,113 @@ namespace AplicacionPract1.Properties
             }
             return Ok(listadoEquipo);
 
-}
-    }
+        }
+
+        [HttpGet]
+        [Route("GetById/{id}")]
+
+        public IActionResult Get(int id)
+        {
+            equipos? equipo = _equiposContexto.equipos.FirstOrDefault(e => e.id_equipos == id);
+
+            if (equipo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(equipo);
+        }
+
+        [HttpGet]
+        [Route("Find/{filtro}")]
+
+        public IActionResult FindbyDescription(string filtro)
+        {
+            equipos? equipo = (from e in _equiposContexto.equipos
+                               where e.descripcion.Contains(filtro)
+                               select e).FirstOrDefault();
+
+            if (equipo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(equipo);
+        }
+
+        [HttpPost]
+        [Route("Add")]
+
+        public IActionResult GuardarEquipo([FromBody] equipos equipo)
+        {
+            try
+            {
+
+                _equiposContexto.equipos.Add(equipo);
+                _equiposContexto.SaveChanges();
+                return Ok(equipo);
+
+            }
+            catch (Exception e) {
+
+                return BadRequest(e.Message);
+
+            }
+        }
+
+        [HttpPut]
+        [Route("Actualizar/{id}")]
+
+        public IActionResult ActualizarEquipo(int id, [FromBody] equipos equipoModificar)
+        { 
+        // Para alterar un registro, se obtiene el registro actual de la base de datos al cual alteraremos una propiedad
+       
+            equipos? equipoActual = _equiposContexto.equipos.FirstOrDefault(e => e.id_equipos == id);
+
+            // verificamos que exista el registro segun su id
+            if (equipoActual == null)
+            {
+                return NotFound();
+            }
+
+            // si se encuentra el registro se alteraran los campos modificables
+            equipoActual.nombre = equipoModificar.nombre;
+            equipoActual.descripcion = equipoModificar.descripcion;
+            equipoActual.marca_id = equipoModificar.marca_id;
+            equipoActual.tipo_equipo_id = equipoModificar.tipo_equipo_id;
+            equipoActual.anio_compra = equipoModificar.anio_compra;
+            equipoActual.costo = equipoModificar.costo;
+
+            // se marca el registro como modificado en el contexto y se envia la modificacion a la bd
+            _equiposContexto.Entry(equipoActual).State = EntityState.Modified;
+            _equiposContexto.SaveChanges();
+
+            return Ok();
+
+        }
+
+        [HttpDelete]
+        [Route("Eliminar/{id}")]
+
+        public IActionResult EliminarEquipo(int id)
+        {
+            //para actualizar un registro se obtiene el registro original de la base de datos al cual eliminaremos
+            
+            equipos? equipo = _equiposContexto.equipos.FirstOrDefault(e => e.id_equipos == id);
+
+            //Verificamos que existe el registro segun su id
+
+            if (equipo == null)
+            {
+                return NotFound();
+            }
+
+            //ejecutamos la accion de eliminar el registro
+            _equiposContexto.equipos.Attach(equipo);
+            _equiposContexto.equipos.Remove(equipo);
+            _equiposContexto.SaveChanges();
+            return Ok(equipo);
+        }
+
+        }
 }
