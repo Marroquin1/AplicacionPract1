@@ -18,6 +18,41 @@ namespace AplicacionPract1.Properties
             _equiposContexto = equiposContexto;
         }
 
+        //EndPoint que retorna el listado de todos los equipos existentes
+        [HttpGet]
+        [Route("GetInnerJoin")]
+
+        public IActionResult Inner()
+        {
+            var listadoEquipo = (from e in _equiposContexto.equipos
+                                 join t in _equiposContexto.tipo_equipo
+                                        on e.tipo_equipo_id equals t.id_tipo_equipo
+                                 join m in _equiposContexto.marcas
+                                        on e.marca_id equals m.id_marcas
+                                 join es in _equiposContexto.estados_equipo
+                                        on e.estado_equipo_id equals es.id_estados_equipo
+                                 select new
+                                 {
+                                     e.id_equipos,
+                                     e.nombre,
+                                     e.descripcion,
+                                     e.tipo_equipo_id,
+                                     tipo_equipo = t.descripcion,
+                                     e.marca_id,
+                                     marca = m.nombre_marcas,
+                                     e.estado_equipo_id,
+                                     estado_equipo = es.descripcion,
+                                     detalle = $"Tipo : {t.descripcion}, Marca {m.nombre_marcas}, Estado Equipo {es.descripcion} ",
+                                     e.estado
+                                 }).Take(2).ToList();
+            if (listadoEquipo.Count() == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(listadoEquipo);
+        }
+
         [HttpGet]
         [Route("GetAll")]
 
